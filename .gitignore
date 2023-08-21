@@ -1,0 +1,8 @@
+.venv
+.vscode
+/.vscode
+/.venv
+.venv/*
+.vscode/*
+venv
+venv/*
