@@ -6,3 +6,6 @@
 .vscode/*
 venv
 venv/*
+
+# .sqlite3 database file
+*.sqlite3

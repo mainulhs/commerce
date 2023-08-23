@@ -1,7 +1,35 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+<h2>Active Listings</h2>
 
-    TODO
+{% if message %}
+<div>{{ message }}</div>
+{% endif %}
+
+{% for listing in listings %}
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2">
+                {% if listing.image_url %}
+                <img src="{{ listing.image_url.url }}" class="card-img-top" alt="listing image" width="100px">
+                {% else %}
+                <img src="#" class="card-img-top" alt="No image available" width="100px">
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <h4 class="card-title">{{ listing.title }}</h4>
+                <h5 class="card-text">Price: ${{ listing.starting_bid }}</h5>
+                <h6 class="card-text">Description: {{ listing.description }}</h6>
+                <p class="card-text">Created On: {{ listing.created_on }}</p>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'listing' listing.id %}" class="btn btn-success btn-c">View Listing</a>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+{% endfor %}
 {% endblock %}

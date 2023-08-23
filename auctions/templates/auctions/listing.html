@@ -1,0 +1,113 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>Listing Details</h2>
+
+{% if message %}
+<div class="alert alert-danger" role="alert">
+    {{ message }}
+</div>
+{% endif %}
+
+{% if user.is_authenticated %}
+{% if winning_message %}
+{% if user.username == winning_message %}
+<div class="alert alert-success" role="alert">
+    {{ winning_message }} (Winner: {{ winning_username }})
+</div>
+{% else %}
+<div class="alert alert-danger" role="alert">
+    This listing is already closed (Winner: {{ winning_username }})
+</div>
+{% endif %}
+{% endif %}
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2">
+                {% if listing.image_url %}
+                <img src="{{ listing.image_url.url }}" class="card-img-top" alt="listing image" width="100px">
+                {% else %}
+                <img src="#" class="card-img-top" alt="No image available" width="100px">
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4 class="card-title">{{ listing.title }}</h4>
+                        <h5 class="card-text">Price: ${{ listing.starting_bid }}</h5>
+                        <h6 class="card-text">Description: {{ listing.description }}</h6>
+                        <p class="card-text">Category: {{ listing.category }}</p>
+                        <p class="card-text">Created By: {{ listing.created_by }}</p>
+                        <p class="card-text">Created On: {{ listing.created_on }}</p>
+                    </div>
+                </div>
+                <br>
+                {% if user.is_authenticated %}
+                <div class="row">
+                    <!-- Place a Bid-->
+                    <div class="col-md-6">
+                        <label for="bid"><strong>Place a Bid</strong></label>
+                        <p class="card-text">Total Bids: {{ total_bids }}</p>
+                        <p class="card-text">Current Bid: ${{ current_bid }}</p>
+                        <p class="card-text">Highest Bid: ${{ highest_bid }} by <strong>{{ highest_bidder }}</strong></p>
+                        <form action="{% url 'add_bid' listing.id %}" method="POST">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <input type="number" class="form-control" name="bid" id="bid" min="{{ listing.starting_bid }}" step="0.01"
+                                value="{{ listing.starting_bid }}">
+                            </div>
+                            <button type="submit" class="btn btn-success btn-c">Place Bid</button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="comment"><strong>Add Comment</strong></label>
+                        <form action="{% url 'add_comment' listing.id %}" method="POST">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <textarea class="form-control" name="comment" id="comment" rows="6"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-c">Add Comment</button>
+                        </form>
+                    </div>
+                </div>
+                <br>
+                {% endif %}
+                <!-- Comments -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>Comments</h4>
+                        {% if comments %}
+                        {% for comment in comments %}
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="card-text">{{ comment.comment }} </p>
+                                <p class="card-text">By: <strong>{{ comment.commenter }}</strong> | On: {{ comment.created }}</p>
+                            </div>
+                        </div>
+                        <br>
+                        {% endfor %}
+                        {% else %}
+                        <p>No comments yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                {% if user.is_authenticated %}
+                {% if not is_in_watchlist %}
+                <a href="{% url 'add_to_watchlist' listing.id %}" class="btn btn-success btn-c">Add to Watchlist</a>
+                {% else %}
+                <a href="{% url 'remove_from_watchlist' listing.id %}" class="btn btn-danger btn-c">Remove from Watchlist</a>
+                {% endif %}
+                <a href="{% url 'close_listing' listing.id %}" class="btn btn-danger btn-c">Close Listing</a>	
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-success btn-c">Add to Watchlist</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
