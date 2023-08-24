@@ -8,4 +8,4 @@ venv
 venv/*
 
 # .sqlite3 database file
-*.sqlite3
+# *.sqlite3

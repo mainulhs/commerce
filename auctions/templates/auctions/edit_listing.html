@@ -1,0 +1,82 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<h2>Edit Listing</h2>
+
+{% if message %}
+<div>{{ message }}</div>
+{% endif %}
+
+<form action="{% url 'edit_listing' listing.id %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="title">Title</label>
+    <div class="form-group">
+        <input autofocus class="form-control" type="text" name="title" placeholder="Title" value="{{ listing.title }}">
+    </div>
+    <label for="description">Description</label>
+    <div class="form-group">
+        <input class="form-control" type="text" name="description" placeholder="Description"
+            value="{{ listing.description }}">
+    </div>
+    <label for="starting_bid">Starting Bid</label>
+    <div class="form-group">
+        <input class="form-control" type="number" name="starting_bid" placeholder="Starting Bid"
+            value="{{ listing.starting_bid }}">
+    </div>
+    <label for="image_url">Current Image</label>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                {% if listing.image_url %}
+                <img src="{{ listing.image_url.url }}" class="card-img-top" alt="listing image" width="100px">
+                {% else %}
+                <img src="#" class="card-img-top" alt="No image available" width="100px">
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <label for="image_url">Upload New Image</label>
+            <div class="form-group">
+                <input class="form-control" type="file" name="image_url">
+            </div>
+        </div>
+    </div>
+    <label for="category">Category</label>
+    <!--Take the value from categories variable for edit listing-->
+    <div class="form-group">
+        <select class="form-control" name="category">
+            <option value="" selected disabled hidden>Select Category</option>
+            {% for category in categories %}
+            {% if category == listing.category %}
+            <option value="{{ category}}" selected>{{ category }}</option>
+            {% else %}
+            <option value="{{ category}}">{{ category }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <label for="is_active">Status</label>
+    <div class="form-group">
+        <select class="form-control" name="is_active">
+            {% if listing.is_active == True %}
+            <option value="True" selected>Active</option>
+            <option value="False">Inactive</option>
+            {% else %}
+            <option value="True">Active</option>
+            <option value="False" selected>Inactive</option>
+            {% endif %}
+        </select>
+    </div>
+    <label for="created_by">Created By</label>
+    <div class="form-group">
+        <input class="form-control" type="text" name="created_by" value="{{ user.username }}" readonly>
+    </div>
+    <label for="created_on">Created On</label>
+    <div class="form-group">
+        <input class="form-control" type="text" name="created_on" value="{{date}}" readonly>
+    </div>
+    <input class="btn btn-success" type="submit" value="Update Listing">
+    <button type="button" class="btn btn-danger" onclick="window.history.back()">Back</button>
+</form>
+{% endblock %}

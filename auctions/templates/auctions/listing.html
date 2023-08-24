@@ -11,15 +11,9 @@
 
 {% if user.is_authenticated %}
 {% if winning_message %}
-{% if user.username == winning_message %}
 <div class="alert alert-success" role="alert">
     {{ winning_message }} (Winner: {{ winning_username }})
 </div>
-{% else %}
-<div class="alert alert-danger" role="alert">
-    This listing is already closed (Winner: {{ winning_username }})
-</div>
-{% endif %}
 {% endif %}
 {% endif %}
 
@@ -49,6 +43,7 @@
                 <div class="row">
                     <!-- Place a Bid-->
                     <div class="col-md-6">
+                        {% if is_creator == False %}
                         <label for="bid"><strong>Place a Bid</strong></label>
                         <p class="card-text">Total Bids: {{ total_bids }}</p>
                         <p class="card-text">Current Bid: ${{ current_bid }}</p>
@@ -61,6 +56,13 @@
                             </div>
                             <button type="submit" class="btn btn-success btn-c">Place Bid</button>
                         </form>
+                        {% else %}
+                        <p class="card-text text-danger"><strong>You cannot bid on your own listing.</strong></p>
+                        <p class="card-text">Total Bids: {{ total_bids }}</p>
+                        <p class="card-text">Current Bid: ${{ current_bid }}</p>
+                        <p class="card-text">Highest Bid: ${{ highest_bid }} by <strong>{{ highest_bidder }}</strong></p>
+                        {% endif %}
+
                     </div>
                     <div class="col-md-6">
                         <label for="comment"><strong>Add Comment</strong></label>
@@ -102,7 +104,11 @@
                 {% else %}
                 <a href="{% url 'remove_from_watchlist' listing.id %}" class="btn btn-danger btn-c">Remove from Watchlist</a>
                 {% endif %}
-                <a href="{% url 'close_listing' listing.id %}" class="btn btn-danger btn-c">Close Listing</a>	
+                {% if is_creator == True %}
+                <a href="{% url 'close_listing' listing.id %}" class="btn btn-danger btn-c">Close Listing</a>
+                <a href="{% url 'edit_listing' listing.id %}" class="btn btn-success btn-c">Edit Listing</a>
+                <a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger btn-c">Delete Listing</a>
+                {% endif %}	
                 {% else %}
                 <a href="{% url 'login' %}" class="btn btn-success btn-c">Add to Watchlist</a>
                 {% endif %}

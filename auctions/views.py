@@ -5,7 +5,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 import datetime
 from django.shortcuts import get_object_or_404
-
+import os
+from django.conf import settings
 from .models import User, Listing, Category, Bid, Comment, Watchlist, Winner
 
 
@@ -137,13 +138,21 @@ def listing(request, listing_id):
     winning_message = None
     winning_username = None
     winner = Winner.objects.filter(listing=listing)
-    if winner.exists():
+    if winner.exists() and winner[0].winner == request.user:
         winning_message = "Congratulations! You won this listing."
         winning_username = winner[0].winner.username
+
+    elif winner.exists() and winner[0].winner != request.user:
+        winning_message = "Sorry, you didn't win this listing."
+        winning_username = winner[0].winner.username
+        # Check if the listing is created by the current user
+        if listing.created_by == request.user:
+            winning_message = "You created this listing."
+            winning_username = winner[0].winner.username
         
     if request.method == "POST":
         bid = request.POST["bid"]
-        
+
         if bid == "":
             return render(request, "auctions/listing.html", {
                 "listing": listing,
@@ -164,6 +173,11 @@ def listing(request, listing_id):
             Bid.objects.create(listing=listing, bidder=request.user, bid=bid)
             return HttpResponseRedirect(reverse("listing", args=(listing.id,)))
         
+    if listing.created_by == request.user:
+        is_creator = True
+    else:
+        is_creator = False
+
     context = {
         "listing": listing,
         "bids": bids,
@@ -176,6 +190,7 @@ def listing(request, listing_id):
         "watchlist_count": watchlist_count,
         "winning_message": winning_message,
         "winning_username": winning_username,
+        "is_creator": is_creator,
     }
 
     return render(request, "auctions/listing.html", context)
@@ -232,15 +247,13 @@ def add_comment(request, listing_id):
 
 def close_listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    winner = Winner.objects.filter(listing=listing)
 
     watchlist_count = 0  # Default value for unauthenticated users
     if request.user.is_authenticated:
         watchlist_count = Watchlist.objects.filter(watcher=request.user).count()
 
-    if winner.exists():
-        return render(request, "auctions/listing.html", {
-            "listing": listing,
+    if listing.is_active == False:
+        return render(request, "auctions/index.html", {
             "watchlist_count": watchlist_count,
             "message": "This listing is already closed."
         })
@@ -255,13 +268,73 @@ def close_listing(request, listing_id):
         listing.is_active = False
         listing.save()
         return redirect('listing', listing_id=listing_id)
+
+
+def edit_listing(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    if request.method == "POST":
+        listing.title = request.POST["title"]
+        listing.description = request.POST["description"]
+        listing.starting_bid = request.POST["starting_bid"]
+        # Handel the image update
+        if "image_url" in request.FILES:
+            old_image_path = os.path.join(settings.MEDIA_ROOT, str(listing.image_url))
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
+            listing.image_url = request.FILES["image_url"]
+        
+        listing.category = Category.objects.get(category=request.POST["category"])
+        listing.is_active = request.POST["is_active"]
+        listing.created_by = User.objects.get(username=request.user.username)
+        listing.save()
+        return HttpResponseRedirect(reverse("listing", args=(listing.id,)))
+    else:
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse("login"))
+        else:
+            if request.user.is_authenticated:
+              watchlist_count = Watchlist.objects.filter(watcher=request.user).count() 
+            
+            return render(request, "auctions/edit_listing.html", {
+            "date": datetime.datetime.now(),
+            "categories": Category.objects.all(),
+            "watchlist_count": watchlist_count,
+            "listing": listing,
+        })
+
+def delete_listing(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    # get the created_by user based on the listing_id and compare to the current user to see if they match then delete the listing if they don't match return an error message
+    if listing.created_by == request.user:
+        # Handel the image delete
+        old_image_path = os.path.join(settings.MEDIA_ROOT, str(listing.image_url))
+        if os.path.exists(old_image_path):
+            os.remove(old_image_path)
+        listing.delete()
+        return HttpResponseRedirect(reverse("index"))
     else:
         if request.user.is_authenticated:
             watchlist_count = Watchlist.objects.filter(watcher=request.user).count()
         return render(request, "auctions/index.html", {
             "watchlist_count": watchlist_count,
-            "message": "You are not authorized to close this listing."
+            "message": "You are not authorized to delete this listing."
         })
     
+def categories(request):
+    listings = Listing.objects.all()
+    categories = Category.objects.all()
+    return render(request, "auctions/categories.html", {
+        "listings": listings,
+        "categories": categories,
+    })
 
     
+def category(request, category):
+    category_object = get_object_or_404(Category, category=category)
+    listings = Listing.objects.filter(category=category_object)
+    categories = Category.objects.all()
+    return render(request, "auctions/category.html", {
+        "listings": listings,
+        "category_object": category_object,
+        "categories": categories,
+    })

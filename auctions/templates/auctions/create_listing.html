@@ -2,56 +2,56 @@
 
 {% block body %}
 
-    <h2>Create Listing</h2>
+<h2>Create Listing</h2>
 
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
+{% if message %}
+<div>{{ message }}</div>
+{% endif %}
 
-    <form action="{% url 'create_listing' %}" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <form>
-            <label for="title">Title</label>
-            <div class="form-group">
-                <input autofocus class="form-control" type="text" name="title" placeholder="Title">
-            </div>
-            <label for="description">Description</label>
-            <div class="form-group">
-                <input class="form-control" type="text" name="description" placeholder="Description">
-            </div>
-            <label for="starting_bid">Starting Bid</label>
-            <div class="form-group">
-                <input class="form-control" type="number" name="starting_bid" placeholder="Starting Bid">
-            </div>
-            <label for="image_url">Upload Image</label>
-            <div class="form-group">
-                <input class="form-control" type="file" name="image_url">
-            </div>
-            <label for="category">Category</label>
-            <!--Take the value from categories variable-->
-            <div class="form-group">
-                <select class="form-control" name="category">
-                    <option value="" selected disabled hidden>Select Category</option>
-                    {% for category in categories %}
-                        <option value="{{ category}}">{{ category }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <label for="is_active">Status</label>
-            <div class="form-group">
-                <select class="form-control" name="is_active">
-                    <option value="True">Active</option>
-                    <option value="False">Inactive</option>
-                </select>
-            </div>
-            <label for="created_by">Created By</label>
-            <div class="form-group">
-                <input class="form-control" type="text" name="created_by" value="{{ user.username }}" readonly>
-            </div>
-            <label for="created_on">Created On</label>
-            <div class="form-group">
-                <input class="form-control" type="text" name="created_on" value="{{date}}" readonly>
-            </div>
-            <input class="btn btn-primary" type="submit" value="Create Listing">
-    </form>
+<form action="{% url 'create_listing' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="title">Title</label>
+    <div class="form-group">
+        <input autofocus class="form-control" type="text" name="title" placeholder="Title">
+    </div>
+    <label for="description">Description</label>
+    <div class="form-group">
+        <input class="form-control" type="text" name="description" placeholder="Description">
+    </div>
+    <label for="starting_bid">Starting Bid</label>
+    <div class="form-group">
+        <input class="form-control" type="number" name="starting_bid" placeholder="Starting Bid">
+    </div>
+    <label for="image_url">Upload Image</label>
+    <div class="form-group">
+        <input class="form-control" type="file" name="image_url">
+    </div>
+    <label for="category">Category</label>
+    <!--Take the value from categories variable-->
+    <div class="form-group">
+        <select class="form-control" name="category">
+            <option value="" selected disabled hidden>Select Category</option>
+            {% for category in categories %}
+            <option value="{{ category}}">{{ category }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <label for="is_active">Status</label>
+    <div class="form-group">
+        <select class="form-control" name="is_active">
+            <option value="True">Active</option>
+            <option value="False">Inactive</option>
+        </select>
+    </div>
+    <label for="created_by">Created By</label>
+    <div class="form-group">
+        <input class="form-control" type="text" name="created_by" value="{{ user.username }}" readonly>
+    </div>
+    <label for="created_on">Created On</label>
+    <div class="form-group">
+        <input class="form-control" type="text" name="created_on" value="{{date}}" readonly>
+    </div>
+    <input class="btn btn-success" type="submit" value="Create Listing">
+    <button type="button" class="btn btn-danger" onclick="window.history.back()">Back</button>
+</form>
 {% endblock %}
